@@ -165,9 +165,31 @@ An example of a script can be seen in the file 03_BALLGOWN.sh.
 The first section of the script provides the location of the stringtie program, as above. The `-e` command tells the program to only estimate the abundance of given reference transcripts and the `-B` command tells stringtie to enable output of ballgown table files which will be created in the same directory as the output GTF. The `-p` and `-G` are the same in the stringtie script above. The final command `-o` tells the program to output the data into a \".gtf\" file instead of \"\_R1.bam\", within a subdirectory labelled after the data file name (i.e.\"${f%\_R1.bam}\"), within a directory called \"ballgown\". \(*in this step, the command is telling the program to create a subdirectory and a directory to deposit all the files. However, if you have already created a directory, you will instead need to provide a relative path to its location*\). After creating the script, it must be loaded to the cluster using the `scp` command and placed into the correct directory. Once the script is loaded, enter the following command to run the script:
 
 ```bash
-for f in *.bam; do sed s/DUMMY/$f/ 03_BALLGOWN.sh | qsub -; done
+	for f in *.bam; do sed s/DUMMY/$f/ 03_BALLGOWN.sh | qsub -; done
 ```
 
 The output of this command may then be found in the directory labelled \"ballgown\". The output produced in each subdirectory should consist of one \'.gtf\' file and multiple \'.ctab\' files. The \'.gtf\' file contains all the information outputted by stringtie (i.e. the gene ID, the transcript ID, the reference gene name, the coverage, the TPM, etc.). The \'.ctab\' files contain only some of the information from the \'.gtf\' file. To view a small section of each of these outputs, use the `head *` command, which allows you to view just the top few lines of all the files.
 
 *This step took approximately 7 minutes for each data file*
+
+## Learning R
+The next step of this workflow requires some knowledge regarding the statistical language \'R\'.
+To begin, you may need to download [R](https://www.r-project.org/) and [RStudio](https://www.rstudio.com/) to your computer. It would be a good idea to work through this tutorial by Code School called [Try R](http://tryr.codeschool.com/levels/1/challenges/1) or try [Swirl](http://swirlstats.com/) - an interactive tutorial that teaches straight from the command line.
+After this initial introduction to R, it may be useful to read through the book [R for Data Science](http://r4ds.had.co.nz/index.html) by Hadley Wickham, which will introduce you the applications of R for data science.
+
+## Transferring your data to the Desktop
+To be able to access the data in RStudio and run ballgown, the data needs to be transferred from the cluster to the desktop. There are multiple ways to do this, depending on what data you wish to move.
+
+### rsync command
+`rsync` works similarly to `rcp` to remotely copy files from one location to another, but does it much faster. An interesting option of this command is that it allows you to exclude data based on a particular pattern. For instance, in the example below, the \'.gtf\' files were excluded as they contained more information than necessary and were too large to transfer onto the desktop. View the options for this command by enterring `man rsync` into the terminal. The following is an example of the `rsync` command and was executed on the computers terminal, NOT the HPC.
+
+``` bash
+	rsync -avur --exclude=*.gtf username@hpc.edu.au:~/path/to/files/ .
+```
+
+### scp command
+It is possible to still use the `scp` command used previously - depending on your data. This will not work if you wish to exclude data from your files.
+
+```bash
+	scp -r username@hpc.edu.au/path/to/files/ .
+```
